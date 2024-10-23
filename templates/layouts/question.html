@@ -1,0 +1,25 @@
+{% load static %}
+
+<div class="card mb-4 bg-body-tertiary">
+    <div class="row g-0">
+        <div class="col-4 text-center" style="width: 10em;">
+            <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded w-50 my-3" alt="...">
+            <input type="number" name="rating" value="{{ question.likes }}" class="w-50 my-3">
+        </div>
+        <div class="col-8">
+            <div class="card-body">
+                <a href="/question/{{ question.id }}" class="card-title fs-4">{{ question.title }}</a>
+                <p class="card-text">{{ question.text }}</p>
+                <div>
+                    <span><a href="/question/{{ question.id }}#answer-form">
+                            answer ({{ question.answer_count }})</a></span><span class="ms-4">Tags:</span>
+                    <div style="display: inline-block;">
+                        {% for tag in question.tags %}
+                        <a href="" class="ms-2">{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
