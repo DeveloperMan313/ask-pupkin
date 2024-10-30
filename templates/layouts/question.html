@@ -15,7 +15,7 @@
                             answer ({{ question.answer_count }})</a></span><span class="ms-4">Tags:</span>
                     <div style="display: inline-block;">
                         {% for tag in question.tags %}
-                        <a href="" class="ms-2">{{ tag }}</a>
+                        <a href="{% url 'tag' tag %}" class="ms-2">{{ tag }}</a>
                         {% endfor %}
                     </div>
                 </div>

@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<h1>Sign Up</h1>
+
+<p class="text-danger">Email already taken!</p>
+
+<form method="post" class="mt-3 fs-5" style="max-width: 30em;">
+    <div class="mb-3 row">
+        <div class="col-4"><label for="inputLogin" class="form-label">Login</label></div>
+        <div class="col-5"><input type="text" class="form-control" id="inputLogin"></div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-4"><label for="inputEmail" class="form-label">Email</label></div>
+        <div class="col-5"><input type="text" class="form-control" id="inputEmail"></div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-4"><label for="inputNickname" class="form-label">Nickname</label></div>
+        <div class="col-5"><input type="text" class="form-control" id="inputNickname"></div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-4"><label for="inputPassword" class="form-label">Password</label></div>
+        <div class="col-5"><input type="password" class="form-control" id="inputPassword"></div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-4"><label for="inputRepeatPassword" class="form-label">Repeat password</label></div>
+        <div class="col-5"><input type="password" class="form-control" id="inputRepeatPassword"></div>
+    </div>
+    <div class="mb-3 row">
+        <div class="col-4"><label for="uploadAvatar" class="form-label">Profile picture</label></div>
+        <div class="col">
+            <label for="uploadAvatar" style="cursor: pointer;"><img src="{% static 'images/placeholder.png' %}"
+                    class="img-fluid rounded w-75 my-3" alt="avatar" style="width: 8em !important;"></label>
+            <div class="input-group">
+                <label class="input-group-text w-25" for="uploadAvatar">Upload</label>
+                <input type="file" class="form-control" id="uploadAvatar">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col"><button type="submit" class="btn btn-primary px-4">Sign up</button></div>
+    </div>
+</form>
+
+<p class="mt-4"><a href="{% url 'login' %}">log in</a></p>
+{% endblock %}

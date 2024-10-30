@@ -13,20 +13,23 @@
 
 <body class="pb-5" style="min-width: 60em;">
     <nav class="navbar bg-body-secondary container-fluid px-5" style="height: 5em;">
-        <a href="/" class="navbar-brand fs-2">AskPupkin</a>
-        <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <a href="{% url 'index' %}" class="navbar-brand fs-2">AskPupkin</a>
+        <form method="get" action="{% url 'index' %}" class="d-flex" role="search">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+        {% if is_logged_in %}
+        <form action="{% url 'ask' %}" method="get"><input type="submit" value="Ask!" class="btn btn-success"></form>
+        {% endif %}
         <div class="h-100 d-flex align-items-center">
             {% if is_logged_in %}
             <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded h-75" alt="...">
             <div class="ms-4">
                 <p class="fs-5 m-0"><a href="" class="text-dark">Profile</a></p>
-                <a href="" class="me-3">settings</a><a href="">log out</a>
+                <a href="{% url 'settings' %}" class="me-3">settings</a><a href="">log out</a>
             </div>
             {% else %}
-            <a href="" class="me-3">log in</a><a href="">log out</a>
+            <a href="{% url 'login' %}" class="me-3">log in</a><a href="{% url 'signup' %}">sign up</a>
             {% endif %}
         </div>
     </nav>
@@ -41,17 +44,17 @@
             <div class="my-5">
                 <h1>Popular Tags</h1>
                 <div>
-                    <a href="" class="me-2">tag1</a>
-                    <a href="" class="me-2">tag2</a>
-                    <a href="" class="me-2">tag3</a>
+                    {% for tag in popular_tags %}
+                    <a href="{% url 'tag' tag %}" class="me-2">{{ tag }}</a>
+                    {% endfor %}
                 </div>
             </div>
             <div>
                 <h1>Best Members</h1>
                 <div>
-                    <p><a href="" class="mb-1">member1</a></p>
-                    <p><a href="" class="mb-1">member2</a></p>
-                    <p><a href="" class="mb-1">member3</a></p>
+                    {% for member in best_members %}
+                    <p><a href="" class="mb-1">{{ member }}</a></p>
+                    {% endfor %}
                 </div>
             </div>
         </div>

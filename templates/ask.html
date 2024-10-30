@@ -3,21 +3,27 @@
 {% load static %}
 
 {% block content %}
-<span class="fs-1">New Question</span>
+<h1>New Question</h1>
 
-<form class="mt-3 fs-5" style="max-width: 30em;">
-    <div class="mb-3">
-        <label for="inputTitle" class="form-label">Title</label>
-        <input type="text" class="form-control" id="inputTitle">
+<p class="text-danger">Question title too short!</p>
+
+<form method="post" class="mt-3 fs-5" style="max-width: 30em;">
+    <div class="mb-3 row">
+        <div class="col-2"><label for="inputTitle" class="form-label">Title</label></div>
+        <div class="col"><input type="text" class="form-control" id="inputTitle"></div>
     </div>
-    <div class="mb-3">
-        <label for="inputText" class="form-label">Text</label>
-        <textarea id="inputText" class="form-control" cols="30" rows="10" style="resize: none;"></textarea>
+    <div class="mb-3 row">
+        <div class="col-2"><label for="inputText" class="form-label">Text</label></div>
+        <div class="col"><textarea id="inputText" class="form-control" cols="30" rows="10"
+                style="resize: none;"></textarea></div>
     </div>
-    <div class="mb-3">
-        <label for="inputTags" class="form-label">Tags</label>
-        <input type="text" class="form-control" id="inputTags">
+    <div class="mb-3 row">
+        <div class="col-2"><label for="inputTags" class="form-label">Tags</label></div>
+        <div class="col"><input type="text" class="form-control" id="inputTags"></div>
     </div>
-    <button type="submit" class="btn btn-primary px-4">Ask</button>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col"><button type="submit" class="btn btn-primary px-4">Ask!</button></div>
+    </div>
 </form>
 {% endblock %}

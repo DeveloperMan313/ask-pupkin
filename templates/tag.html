@@ -1,0 +1,15 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<span class="fs-1">Tag: {{ tag }}</span>
+
+<div class="my-3" style="max-width: 50em;">
+    {% for question in questions %}
+    {% include 'layouts/question.html' %}
+    {% endfor %}
+</div>
+
+{% include 'layouts/paginator.html' %}
+{% endblock %}

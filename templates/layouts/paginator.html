@@ -2,16 +2,20 @@
 
 <nav aria-label="...">
     <ul class="pagination">
-        <li class="page-item disabled">
-            <span class="page-link">First</span>
+        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="?p=1">First</a>
         </li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        {% if page > 1 %}
+        <li class="page-item"><a class="page-link" href="?p={{ page|add:'-1' }}">{{ page|add:'-1' }}</a></li>
+        {% endif %}
         <li class="page-item active" aria-current="page">
-            <span class="page-link">2</span>
+            <span class="page-link">{{ page }}</span>
         </li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-            <a class="page-link" href="#">Last</a>
+        {% if page < num_pages %}
+        <li class="page-item"><a class="page-link" href="?p={{ page|add:'1' }}">{{ page|add:'1' }}</a></li>
+        {% endif %}
+        <li class="page-item {% if page == num_pages %}disabled{% endif %}">
+            <a class="page-link" href="?p={{ num_pages }}">Last</a>
         </li>
     </ul>
 </nav>

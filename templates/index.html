@@ -6,10 +6,10 @@
 <div>
     {% if category == 'new' %}
     <span class="fs-1 me-4">New Questions</span>
-    <a href="/hot/" class="fs-3">Hot Questions</a>
+    <a href="{% url 'hot' %}" class="fs-3">Hot Questions</a>
     {% else %}
     <span class="fs-1 me-4">Hot Questions</span>
-    <a href="/" class="fs-3">New Questions</a>
+    <a href="{% url 'index' %}" class="fs-3">New Questions</a>
     {% endif %}
 </div>
 
