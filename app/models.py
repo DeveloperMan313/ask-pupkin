@@ -1,21 +1,64 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Count, Q, F
 
 
 class Profile(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     nickname = models.CharField(null=False, unique=True, max_length=50)
 
 
 class Tag(models.Model):
     name = models.CharField(null=False, max_length=50)
 
+    def __str__(self):
+        return self.name
+
+
+class QuestionManager(models.query.QuerySet):
+    def with_rating(self):
+        return self \
+            .annotate(likes=Count('question_rating', distinct=True, filter=Q(question_rating__is_positive=True))) \
+            .annotate(dislikes=Count('question_rating', distinct=True, filter=Q(question_rating__is_positive=False))) \
+            .annotate(rating=F('likes') - F('dislikes'))
+
+    def with_answer_count(self):
+        return self.annotate(answer_count=Count('answer', distinct=True))
+
+    def new(self):
+        return self.with_rating().with_answer_count().order_by('-pk')
+
+    def hot(self):
+        return self.with_rating().with_answer_count().order_by('-rating')
+
+    def by_tag_name(self, tag_name: str):
+        return self.new().filter(tags__in=Tag.objects.filter(name=tag_name))
+
+    def by_id(self, question_id: int):
+        return self.with_rating().get(pk=question_id)
+
 
 class Question(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     title = models.CharField(null=False, max_length=150)
     text = models.TextField(null=False, max_length=5000)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, blank=True)
+
+    objects = QuestionManager.as_manager()
+
+    def init_tag_list(self):
+        self.tag_list = tuple(map(str, self.tags.all()))
+
+
+class AnswerManager(models.query.QuerySet):
+    def with_rating(self):
+        return self \
+            .annotate(likes=Count('answer_rating', distinct=True, filter=Q(answer_rating__is_positive=True))) \
+            .annotate(dislikes=Count('answer_rating', distinct=True, filter=Q(answer_rating__is_positive=False))) \
+            .annotate(rating=F('likes') - F('dislikes'))
+
+    def by_question_id(self, question_id: int):
+        return self.with_rating().filter(question__id=question_id).order_by('-is_correct')
 
 
 class Answer(models.Model):
@@ -24,10 +67,13 @@ class Answer(models.Model):
     text = models.TextField(null=False, max_length=5000)
     is_correct = models.BooleanField(null=False, default=False)
 
+    objects = AnswerManager.as_manager()
+
 
 class QuestionRating(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name='question_rating')
     is_positive = models.BooleanField(null=False)
 
     class Meta:
@@ -40,7 +86,8 @@ class QuestionRating(models.Model):
 
 class AnswerRating(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    answer = models.ForeignKey(
+        Answer, on_delete=models.CASCADE, related_name='answer_rating')
     is_positive = models.BooleanField(null=False)
 
     class Meta:

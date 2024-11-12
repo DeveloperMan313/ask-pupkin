@@ -1,28 +1,7 @@
 from math import ceil
 from django.shortcuts import render
+from .models import *
 
-
-QUESTIONS = [
-    {
-        'id': i,
-        'title': f'Title {i}',
-        'text': 'text ' * i,
-        'answer_count': i,
-        'tags': [f'tag{j}' for j in range(1, i + 1)],
-        'likes': i,
-    }
-    for i in range(1, 23)
-]
-
-ANSWERS = [
-    {
-        'id': i,
-        'text': 'text ' * i,
-        'likes': i,
-        'is_correct': i == 1,
-    }
-    for i in range(1, 5)
-]
 
 POPULAR_TAGS = [f'tag{i}' for i in range(1, 10)]
 
@@ -43,7 +22,9 @@ def paginate(objects_list, request, per_page=5):
 
 
 def index(request):
-    page_num, questions, num_pages = paginate(QUESTIONS, request)
+    page_num, questions, num_pages = paginate(Question.objects.new(), request)
+    for q in questions:
+        q.init_tag_list()
     return render(
         request,
         'index.html',
@@ -61,8 +42,9 @@ def index(request):
 
 
 def hot(request):
-    page_num, questions, num_pages = paginate(
-        tuple(reversed(QUESTIONS)), request)
+    page_num, questions, num_pages = paginate(Question.objects.hot(), request)
+    for q in questions:
+        q.init_tag_list()
     return render(
         request,
         'index.html',
@@ -81,8 +63,9 @@ def hot(request):
 
 def tag(request, tag):
     page_num, questions, num_pages = paginate(
-        tuple(filter(lambda q: tag in q['tags'], QUESTIONS)),
-        request)
+        Question.objects.by_tag_name(tag), request)
+    for q in questions:
+        q.init_tag_list()
     return render(
         request,
         'tag.html',
@@ -113,6 +96,8 @@ def ask(request):
 
 
 def question(request, question_id):
+    question = Question.objects.by_id(question_id)
+    question.init_tag_list()
     return render(
         request,
         'question.html',
@@ -121,8 +106,8 @@ def question(request, question_id):
             'popular_tags': POPULAR_TAGS,
             'best_members': BEST_MEMBERS,
             'is_logged_in': True,
-            'question': next(filter(lambda q: q['id'] == question_id, QUESTIONS)),
-            'answers': ANSWERS,
+            'question': question,
+            'answers': tuple(Answer.objects.by_question_id(question_id)),
         },
     )
 

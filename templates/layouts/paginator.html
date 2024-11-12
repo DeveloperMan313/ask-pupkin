@@ -1,5 +1,6 @@
 {% load static %}
 
+{% if num_pages > 1 %}
 <nav aria-label="...">
     <ul class="pagination">
         <li class="page-item {% if page == 1 %}disabled{% endif %}">
@@ -19,3 +20,4 @@
         </li>
     </ul>
 </nav>
+{% endif %}
