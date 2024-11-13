@@ -3,13 +3,30 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Q, F
 
 
+class ProfileManager(models.query.QuerySet):
+    def best(self, count: int = 10):
+        return self.annotate(answer_count=Count('user__answer', distinct=True)).order_by('-answer_count')[:count]
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     nickname = models.CharField(null=False, unique=True, max_length=50)
 
+    objects = ProfileManager.as_manager()
+
+    def __str__(self):
+        return self.nickname
+
+
+class TagManager(models.query.QuerySet):
+    def popular(self, count: int = 10):
+        return self.annotate(times_used=Count('question', distinct=True)).order_by('-times_used')[:count]
+
 
 class Tag(models.Model):
     name = models.CharField(null=False, max_length=50)
+
+    objects = TagManager.as_manager()
 
     def __str__(self):
         return self.name

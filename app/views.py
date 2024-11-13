@@ -3,11 +3,6 @@ from django.shortcuts import render
 from .models import *
 
 
-POPULAR_TAGS = [f'tag{i}' for i in range(1, 10)]
-
-BEST_MEMBERS = [f'member{i}' for i in range(1, 4)]
-
-
 def paginate(objects_list, request, per_page=5):
     try:
         page_num = int(request.GET['p'])
@@ -30,8 +25,8 @@ def index(request):
         'index.html',
         context={
             'page_title': 'AskPupkin',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'page': page_num,
             'num_pages': num_pages,
             'is_logged_in': True,
@@ -50,8 +45,8 @@ def hot(request):
         'index.html',
         context={
             'page_title': 'AskPupkin - Hot',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'page': page_num,
             'num_pages': num_pages,
             'is_logged_in': True,
@@ -71,8 +66,8 @@ def tag(request, tag):
         'tag.html',
         context={
             'page_title': f'AskPupkin - Tag: {tag}',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'page': page_num,
             'num_pages': num_pages,
             'is_logged_in': True,
@@ -88,8 +83,8 @@ def ask(request):
         'ask.html',
         context={
             'page_title': 'AskPupkin - Ask',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'is_logged_in': True,
         },
     )
@@ -103,8 +98,8 @@ def question(request, question_id):
         'question.html',
         context={
             'page_title': 'AskPupkin - Question',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'is_logged_in': True,
             'question': question,
             'answers': tuple(Answer.objects.by_question_id(question_id)),
@@ -118,8 +113,8 @@ def settings(request):
         'settings.html',
         context={
             'page_title': 'AskPupkin - Settings',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'is_logged_in': True,
         },
     )
@@ -131,8 +126,8 @@ def signup(request):
         'signup.html',
         context={
             'page_title': 'AskPupkin - Sign Up',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'is_logged_in': False,
         },
     )
@@ -144,8 +139,8 @@ def login(request):
         'login.html',
         context={
             'page_title': 'AskPupkin - Log In',
-            'popular_tags': POPULAR_TAGS,
-            'best_members': BEST_MEMBERS,
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
             'is_logged_in': False,
         },
     )
