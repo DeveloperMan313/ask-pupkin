@@ -75,7 +75,7 @@ class AnswerManager(models.query.QuerySet):
             .annotate(rating=F('likes') - F('dislikes'))
 
     def by_question_id(self, question_id: int):
-        return self.with_rating().filter(question__id=question_id).order_by('-is_correct')
+        return self.with_rating().filter(question__id=question_id).order_by('-is_correct', '-rating')
 
 
 class Answer(models.Model):
