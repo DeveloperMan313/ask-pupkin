@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls.exceptions import Http404
 from .models import *
 
@@ -76,7 +77,10 @@ def hot(request):
 
 
 def tag(request, tag):
-    page = paginate(request, Question.objects.by_tag_name(tag))
+    questions = Question.objects.by_tag_name(tag)
+    if len(questions) == 0:
+        raise Http404
+    page = paginate(request, questions)
     for q in page.object_list:
         q.init_tag_list()
     return render(
@@ -108,7 +112,10 @@ def ask(request):
 
 
 def question(request, question_id):
-    question = Question.objects.by_id(question_id)
+    try:
+        question = Question.objects.by_id(question_id)
+    except ObjectDoesNotExist:
+        raise Http404
     question.init_tag_list()
     return render(
         request,
