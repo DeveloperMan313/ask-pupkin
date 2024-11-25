@@ -20,6 +20,8 @@ from django.urls import path
 
 from app import views
 
+handler404 = 'app.views.handler404'
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('hot/', views.hot, name='hot'),

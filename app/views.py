@@ -1,7 +1,5 @@
-from math import ceil
-from django.shortcuts import render, redirect
-from django.db.models import Model
-from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage
 from django.urls.exceptions import Http404
 from .models import *
 
@@ -23,6 +21,20 @@ def paginate(request, object_list):
     except EmptyPage:
         page = paginator.page(paginator.num_pages)
     return page
+
+
+def handler404(request, exception, template_name="404.html"):
+    return render(
+        request,
+        template_name,
+        status=404,
+        context={
+            'page_title': 'AskPupkin',
+            'popular_tags': Tag.objects.popular(),
+            'best_members': Profile.objects.best(),
+            'is_logged_in': True,
+        },
+    )
 
 
 def index(request):
