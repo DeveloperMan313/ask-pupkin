@@ -1,24 +1,33 @@
 from math import ceil
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.db.models import Model
+from django.core.paginator import Paginator
+from django.urls.exceptions import Http404
 from .models import *
 
 
-def paginate(objects_list, request, per_page=5):
+def paginate(request, object_list):
     try:
-        page_num = int(request.GET['p'])
-    except KeyError:
-        page_num = 1
+        limit = int(request.GET.get('limit', 10))
     except ValueError:
-        page_num = 1
-    num_pages = ceil(len(objects_list) / per_page)
-    page_num = max(1, min(page_num, num_pages))
-    page = objects_list[(page_num - 1) * per_page:page_num * per_page]
-    return page_num, page, num_pages
+        limit = 10
+    if limit > 100:
+        limit = 10
+    try:
+        num_page = int(request.GET.get('page', 1))
+    except ValueError:
+        raise Http404
+    paginator = Paginator(object_list, limit)
+    try:
+        page = paginator.page(num_page)
+    except EmptyPage:
+        page = paginator.page(paginator.num_pages)
+    return page
 
 
 def index(request):
-    page_num, questions, num_pages = paginate(Question.objects.new(), request)
-    for q in questions:
+    page = paginate(request, Question.objects.new())
+    for q in page.object_list:
         q.init_tag_list()
     return render(
         request,
@@ -27,18 +36,17 @@ def index(request):
             'page_title': 'AskPupkin',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'page': page_num,
-            'num_pages': num_pages,
+            'page': page,
             'is_logged_in': True,
-            'questions': questions,
+            'questions': page.object_list,
             'category': 'new',
         },
     )
 
 
 def hot(request):
-    page_num, questions, num_pages = paginate(Question.objects.hot(), request)
-    for q in questions:
+    page = paginate(request, Question.objects.hot())
+    for q in page.object_list:
         q.init_tag_list()
     return render(
         request,
@@ -47,19 +55,17 @@ def hot(request):
             'page_title': 'AskPupkin - Hot',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'page': page_num,
-            'num_pages': num_pages,
+            'page': page,
             'is_logged_in': True,
-            'questions': questions,
+            'questions': page.object_list,
             'category': 'top',
         },
     )
 
 
 def tag(request, tag):
-    page_num, questions, num_pages = paginate(
-        Question.objects.by_tag_name(tag), request)
-    for q in questions:
+    page = paginate(request, Question.objects.by_tag_name(tag))
+    for q in page.object_list:
         q.init_tag_list()
     return render(
         request,
@@ -68,11 +74,10 @@ def tag(request, tag):
             'page_title': f'AskPupkin - Tag: {tag}',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'page': page_num,
-            'num_pages': num_pages,
+            'page': page,
             'is_logged_in': True,
             'tag': tag,
-            'questions': questions,
+            'questions': page.object_list,
         },
     )
 
