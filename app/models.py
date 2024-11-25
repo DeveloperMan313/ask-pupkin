@@ -24,7 +24,7 @@ class TagManager(models.query.QuerySet):
 
 
 class Tag(models.Model):
-    name = models.CharField(null=False, max_length=50)
+    name = models.CharField(null=False, unique=True, max_length=50)
 
     objects = TagManager.as_manager()
 

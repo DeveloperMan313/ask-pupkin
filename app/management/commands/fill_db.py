@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from app.models import *
-from random import choice, choices, randint
+from random import choice, choices, sample, randint
 
 
 COMMON_WORDS = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make',
@@ -26,7 +26,13 @@ def fill_profiles(count: int):
 
 
 def fill_tags(count: int):
-    tags = [Tag(name=choice(COMMON_WORDS)) for _ in range(count)]
+    tag_strings = []
+    for _ in range(count):
+        tag = COMMON_WORDS[0]
+        while tag in tag_strings:
+            tag = random_text(1, 5).replace(' ', '_')
+        tag_strings.append(tag)
+    tags = [Tag(name=string) for string in tag_strings]
     Tag.objects.bulk_create(tags)
 
     print('tags filled')
@@ -43,7 +49,7 @@ def fill_questions(count: int):
         questions.append(Question(user=user, title=title, text=text))
     Question.objects.bulk_create(questions)
     for question in questions:
-        question.tags.set(choices(tags, k=randint(0, 5)))
+        question.tags.set(sample(tags, k=randint(0, 5)))
         question.save()
 
     print('questions filled')
@@ -65,37 +71,53 @@ def fill_answers(count: int):
 
 
 def fill_question_ratings(count: int):
-    users = set(User.objects.all())
-    questions = tuple(Question.objects.all())
-    q_ratings = []
-    user_can_rate = {u: set(questions) for u in users}
-    for _ in range(count):
-        user = choice(tuple(users))
-        question = choice(tuple(user_can_rate[user]))
-        user_can_rate[user].remove(question)
-        if len(user_can_rate) == 0:
-            users.remove(user)
-        q_ratings.append(QuestionRating(
-            user=user, question=question, is_positive=randint(0, 1)))
-    QuestionRating.objects.bulk_create(q_ratings)
+    user_cnt = User.objects.count()
+    max_ratings_per_user = int(count / user_cnt) * 2
+    ratings_left = count
+    all_questions = tuple(Question.objects.all())
+    for user in User.objects.all()[:user_cnt - 1]:
+        rating_cnt = min(randint(1, max_ratings_per_user), ratings_left)
+        questions = sample(all_questions, k=rating_cnt)
+        ratings = tuple(
+            QuestionRating(user=user, question=q, is_positive=bool(randint(0, 1)))
+            for q in questions
+        )
+        QuestionRating.objects.bulk_create(ratings)
+        ratings_left -= rating_cnt
+    if ratings_left > 0:
+        questions = sample(all_questions, k=ratings_left)
+        user = User.objects.last()
+        ratings = tuple(
+            QuestionRating(user=user, question=q, is_positive=bool(randint(0, 1)))
+            for q in questions
+        )
+        QuestionRating.objects.bulk_create(ratings)
 
     print('question ratings filled')
 
 
 def fill_answer_ratings(count: int):
-    users = set(User.objects.all())
-    answers = tuple(Answer.objects.all())
-    a_ratings = []
-    user_can_rate = {u: set(answers) for u in users}
-    for _ in range(count):
-        user = choice(tuple(users))
-        answer = choice(tuple(user_can_rate[user]))
-        user_can_rate[user].remove(answer)
-        if len(user_can_rate) == 0:
-            users.remove(user)
-        a_ratings.append(AnswerRating(
-            user=user, answer=answer, is_positive=randint(0, 1)))
-    AnswerRating.objects.bulk_create(a_ratings)
+    user_cnt = User.objects.count()
+    max_ratings_per_user = int(count / user_cnt) * 2
+    ratings_left = count
+    all_answers = tuple(Answer.objects.all())
+    for user in User.objects.all()[:user_cnt - 1]:
+        rating_cnt = min(randint(1, max_ratings_per_user), ratings_left)
+        answers = sample(all_answers, k=rating_cnt)
+        ratings = tuple(
+            AnswerRating(user=user, answer=a, is_positive=bool(randint(0, 1)))
+            for a in answers
+        )
+        AnswerRating.objects.bulk_create(ratings)
+        ratings_left -= rating_cnt
+    if ratings_left > 0:
+        answers = sample(all_answers, k=ratings_left)
+        user = User.objects.last()
+        ratings = tuple(
+            AnswerRating(user=user, answer=a, is_positive=bool(randint(0, 1)))
+            for a in answers
+        )
+        AnswerRating.objects.bulk_create(ratings)
 
     print('answer ratings filled')
 
