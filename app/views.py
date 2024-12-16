@@ -1,8 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls.exceptions import Http404
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth import login as auth_login
 from .models import *
+from .forms import *
 
 
 def paginate(request, object_list):
@@ -144,7 +147,18 @@ def settings(request):
     )
 
 
+@csrf_protect
 def signup(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            user = form.get_user()
+            auth_login(request, user)
+            return HttpResponseRedirect('/')
+    else:
+        form = SignupForm()
+
     return render(
         request,
         'signup.html',
@@ -153,11 +167,22 @@ def signup(request):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'is_logged_in': False,
+            'form': form,
         },
     )
 
 
+@csrf_protect
 def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            return HttpResponseRedirect('/')
+    else:
+        form = LoginForm()
+
     return render(
         request,
         'login.html',
@@ -166,5 +191,6 @@ def login(request):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'is_logged_in': False,
+            'form': form,
         },
     )
