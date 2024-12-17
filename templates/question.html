@@ -1,6 +1,7 @@
 {% extends 'layouts/base.html' %}
 
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="card mt-4" style="max-width: 50em;">
@@ -34,11 +35,17 @@
     {% endfor %}
 </div>
 
+{% if user.is_authenticated %}
 <hr class="border border-2 opacity-75 my-4" style="max-width: 50em;">
-
-<form method="post" class="fs-5" id="answer-form" style="max-width: 30em;">
-    <textarea id="inputAnswer" placeholder="Enter your answer..." class="form-control mb-3" cols="30" rows="5"
-        style="resize: none;"></textarea>
-    <button type="submit" class="btn btn-primary px-4">Answer</button>
+<style>
+    .asteriskField {
+        display: none;
+    }
+</style>
+<form method="post" class="mt-3 fs-5" style="max-width: 30em;" id="answer-form">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Answer" class="btn btn-primary px-4">
 </form>
+{% endif %}
 {% endblock %}

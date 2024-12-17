@@ -3,7 +3,9 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls.exceptions import Http404
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth import login as auth_login
+from django.http import HttpResponseBadRequest
+from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 
@@ -36,11 +38,11 @@ def handler404(request, exception, template_name="404.html"):
             'page_title': 'AskPupkin',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': True,
         },
     )
 
 
+@csrf_protect
 def index(request):
     page = paginate(request, Question.objects.new())
     for q in page.object_list:
@@ -53,13 +55,13 @@ def index(request):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'page': page,
-            'is_logged_in': True,
             'questions': page.object_list,
             'category': 'new',
         },
     )
 
 
+@csrf_protect
 def hot(request):
     page = paginate(request, Question.objects.hot())
     for q in page.object_list:
@@ -72,13 +74,13 @@ def hot(request):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'page': page,
-            'is_logged_in': True,
             'questions': page.object_list,
             'category': 'top',
         },
     )
 
 
+@csrf_protect
 def tag(request, tag):
     questions = Question.objects.by_tag_name(tag)
     if len(questions) == 0:
@@ -94,14 +96,23 @@ def tag(request, tag):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'page': page,
-            'is_logged_in': True,
             'tag': tag,
             'questions': page.object_list,
         },
     )
 
 
+@csrf_protect
+@login_required
 def ask(request):
+    if request.method == 'POST':
+        form = QuestionForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            question_id = form.save()
+            return HttpResponseRedirect(f'/question/{question_id}')
+    else:
+        form = QuestionForm()
+
     return render(
         request,
         'ask.html',
@@ -109,16 +120,26 @@ def ask(request):
             'page_title': 'AskPupkin - Ask',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': True,
+            'form': form,
         },
     )
 
 
+@csrf_protect
 def question(request, question_id):
     try:
         question = Question.objects.by_id(question_id)
     except ObjectDoesNotExist:
         raise Http404
+
+    if request.method == 'POST':
+        form = AnswerForm(user=request.user, question=question, data=request.POST)
+        if form.is_valid():
+            answer_id = form.save()
+            return HttpResponseRedirect(f'/question/{question_id}/#answer{answer_id}')
+    else:
+        form = AnswerForm()
+
     question.init_tag_list()
     return render(
         request,
@@ -127,14 +148,24 @@ def question(request, question_id):
             'page_title': 'AskPupkin - Question',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': True,
             'question': question,
             'answers': tuple(Answer.objects.by_question_id(question_id)),
+            'form': form,
         },
     )
 
 
+@csrf_protect
+@login_required
 def settings(request):
+    if request.method == 'POST':
+        form = SettingsForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(f'/settings/')
+    else:
+        form = SettingsForm(user=request.user)
+
     return render(
         request,
         'settings.html',
@@ -142,7 +173,7 @@ def settings(request):
             'page_title': 'AskPupkin - Settings',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': True,
+            'form': form,
         },
     )
 
@@ -152,8 +183,7 @@ def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
-            form.save()
-            user = form.get_user()
+            user = form.save()
             auth_login(request, user)
             return HttpResponseRedirect('/')
     else:
@@ -166,7 +196,6 @@ def signup(request):
             'page_title': 'AskPupkin - Sign Up',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': False,
             'form': form,
         },
     )
@@ -190,7 +219,14 @@ def login(request):
             'page_title': 'AskPupkin - Log In',
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
-            'is_logged_in': False,
             'form': form,
         },
     )
+
+
+@csrf_protect
+def logout(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest
+    auth_logout(request)
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])

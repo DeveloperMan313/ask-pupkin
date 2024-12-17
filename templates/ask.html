@@ -1,29 +1,14 @@
 {% extends 'layouts/base.html' %}
 
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <h1>New Question</h1>
 
-<p class="text-danger">Question title too short!</p>
-
 <form method="post" class="mt-3 fs-5" style="max-width: 30em;">
-    <div class="mb-3 row">
-        <div class="col-2"><label for="inputTitle" class="form-label">Title</label></div>
-        <div class="col"><input type="text" class="form-control" id="inputTitle"></div>
-    </div>
-    <div class="mb-3 row">
-        <div class="col-2"><label for="inputText" class="form-label">Text</label></div>
-        <div class="col"><textarea id="inputText" class="form-control" cols="30" rows="10"
-                style="resize: none;"></textarea></div>
-    </div>
-    <div class="mb-3 row">
-        <div class="col-2"><label for="inputTags" class="form-label">Tags</label></div>
-        <div class="col"><input type="text" class="form-control" id="inputTags"></div>
-    </div>
-    <div class="row">
-        <div class="col-2"></div>
-        <div class="col"><button type="submit" class="btn btn-primary px-4">Ask!</button></div>
-    </div>
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Ask!" class="btn btn-primary px-4">
 </form>
 {% endblock %}
