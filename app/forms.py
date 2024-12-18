@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate
+from django.db import transaction
 from .models import *
 
 
@@ -61,12 +62,15 @@ class SignupForm(forms.Form):
             self.password = password
             self.profile = Profile(user=self.user, nickname=nickname)
 
+    @transaction.atomic
     def save(self) -> User:
+        cleaned_data = super().clean()
         self.user.set_password(self.password)
         self.user.save()
         profile_picture = cleaned_data.get('profile_picture')
-        profile_picture.name = self.user.password[-64:]
-        self.profile.picture = profile_picture
+        if profile_picture:
+            profile_picture.name = self.user.password[-64:]
+            self.profile.picture = profile_picture
         self.profile.save()
         return self.user
 
@@ -112,16 +116,18 @@ class SettingsForm(forms.Form):
         ):
             self.add_error('nickname', 'Nickname already taken')
 
+    @transaction.atomic
     def save(self):
         cleaned_data = super().clean()
 
         profile_picture = cleaned_data.get('profile_picture')
-        profile_picture.name = self.user.password[-64:]
+        if profile_picture:
+            profile_picture.name = self.user.password[-64:]
+            self.profile.picture = profile_picture
 
         self.user.username = cleaned_data.get('username')
         self.user.email = cleaned_data.get('email')
         self.profile.nickname = cleaned_data.get('nickname')
-        self.profile.picture = profile_picture
 
         self.user.save()
         self.profile.save()
@@ -158,7 +164,7 @@ class QuestionForm(forms.Form):
     tags = forms.CharField(label='Tags')
 
     def __init__(
-        self, user: User = None, min_tag_len: int = 4, max_tags: int = 10, **args
+        self, user: User = None, min_tag_len: int = 4, max_tags: int = 3, **args
     ):
         super().__init__(**args)
         self.user = user
@@ -184,6 +190,7 @@ class QuestionForm(forms.Form):
         if len(self.errors) == 0:
             self.tags = (Tag.objects.get_or_create(name=name)[0] for name in tag_strs)
 
+    @transaction.atomic
     def save(self) -> int:
         cleaned_data = super().clean()
         question = Question(
