@@ -3,9 +3,10 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls.exceptions import Http404
 from django.views.decorators.csrf import csrf_protect
-from django.http import HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
+import json
 from .models import *
 from .forms import *
 
@@ -230,3 +231,93 @@ def logout(request):
         return HttpResponseBadRequest
     auth_logout(request)
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+@csrf_protect
+@login_required
+def rate_question(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Wrong method')
+    try:
+        request_json = json.loads(request.body)
+        if request_json['action'] not in ['like', 'dislike']:
+            raise ValueError
+        question = Question.objects.with_rating().get(pk=request_json['id'])
+    except (ValueError, KeyError, ObjectDoesNotExist):
+        return HttpResponseBadRequest('Wrong format')
+
+    if question.user == request.user:
+        return HttpResponseBadRequest('User cannot rate oneself')
+
+    try:
+        users_rating = QuestionRating.objects.get(user=request.user, question=question)
+    except ObjectDoesNotExist:
+        users_rating = None
+
+    old_rating = question.rating
+    is_like = request_json['action'] == 'like'
+
+    if (
+        users_rating is None
+        or (not users_rating.is_positive and is_like)
+        or (users_rating.is_positive and not is_like)
+    ):
+        if users_rating is None:
+            QuestionRating(
+                user=request.user, question=question, is_positive=is_like
+            ).save()
+        else:
+            users_rating.delete()
+
+        if is_like:
+            new_rating = old_rating + 1
+        else:
+            new_rating = old_rating - 1
+    else:
+        new_rating = old_rating
+
+    return JsonResponse({'new_rating': new_rating})
+
+
+@csrf_protect
+@login_required
+def rate_answer(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Wrong method')
+    try:
+        request_json = json.loads(request.body)
+        if request_json['action'] not in ['like', 'dislike']:
+            raise ValueError
+        answer = Answer.objects.with_rating().get(pk=request_json['id'])
+    except (ValueError, KeyError, ObjectDoesNotExist):
+        return HttpResponseBadRequest('Wrong format')
+
+    if answer.user == request.user:
+        return HttpResponseBadRequest('User cannot rate oneself')
+
+    try:
+        users_rating = AnswerRating.objects.get(user=request.user, answer=answer)
+    except ObjectDoesNotExist:
+        users_rating = None
+
+    old_rating = answer.rating
+    is_like = request_json['action'] == 'like'
+
+    if (
+        users_rating is None
+        or (not users_rating.is_positive and is_like)
+        or (users_rating.is_positive and not is_like)
+    ):
+        if users_rating is None:
+            AnswerRating(user=request.user, answer=answer, is_positive=is_like).save()
+        else:
+            users_rating.delete()
+
+        if is_like:
+            new_rating = old_rating + 1
+        else:
+            new_rating = old_rating - 1
+    else:
+        new_rating = old_rating
+
+    return JsonResponse({'new_rating': new_rating})

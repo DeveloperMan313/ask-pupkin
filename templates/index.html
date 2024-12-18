@@ -20,4 +20,6 @@
 </div>
 
 {% include 'layouts/paginator.html' %}
+{% csrf_token %}
+<script src="{% static 'js/ratings.js' %}"></script>
 {% endblock %}

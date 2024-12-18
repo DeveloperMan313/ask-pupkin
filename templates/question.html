@@ -9,7 +9,7 @@
     <div class="row g-0">
         <div class="col-4 text-center" style="width: 10em;">
             <img src="{{ question.user.profile.picture|get_pfp_url }}" class="img-fluid rounded w-75 my-3" alt="...">
-            <input type="number" name="rating" value="{{ question.rating }}" class="w-50 my-3">
+            {% include 'layouts/question_rating.html' %}
         </div>
         <div class="col-8">
             <div class="card-body">
@@ -49,4 +49,6 @@
     <input type="submit" value="Answer" class="btn btn-primary px-4">
 </form>
 {% endif %}
+{% csrf_token %}
+<script src="{% static 'js/ratings.js' %}"></script>
 {% endblock %}
