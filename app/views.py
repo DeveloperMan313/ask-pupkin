@@ -159,7 +159,7 @@ def question(request, question_id):
 @login_required
 def settings(request):
     if request.method == 'POST':
-        form = SettingsForm(user=request.user, data=request.POST)
+        form = SettingsForm(user=request.user, data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(f'/settings/')
@@ -181,7 +181,7 @@ def settings(request):
 @csrf_protect
 def signup(request):
     if request.method == 'POST':
-        form = SignupForm(request.POST)
+        form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             auth_login(request, user)

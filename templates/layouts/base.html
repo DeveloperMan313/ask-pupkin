@@ -1,4 +1,5 @@
 {% load static %}
+{% load pfp %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,9 +23,9 @@
         {% endif %}
         <div class="h-100 d-flex align-items-center">
             {% if user.is_authenticated %}
-            <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded h-75" alt="...">
+            <img src="{{ user.profile.picture|get_pfp_url }}" class="img-fluid rounded h-75" alt="...">
             <div class="ms-4">
-                <p class="fs-5 m-0"><a href="" class="text-dark">{{ user.username }}</a></p>
+                <p class="fs-5 m-0"><a href="" class="text-dark">{{ user.profile.nickname }}</a></p>
                 <a href="{% url 'settings' %}" class="me-3">settings</a>
                 <label for="logout-submit">
                     <span style="cursor: pointer; text-decoration: underline;" class="link-danger">log out</span>

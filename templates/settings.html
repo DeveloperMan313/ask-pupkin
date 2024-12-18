@@ -6,7 +6,7 @@
 {% block content %}
 <h1>Settings</h1>
 
-<form method="post" class="mt-3 fs-5" style="max-width: 30em;">
+<form method="post" enctype="multipart/form-data" class="mt-3 fs-5" style="max-width: 30em;">
     {% csrf_token %}
     {{ form|crispy }}
     <input type="submit" value="Save" class="btn btn-primary px-4">

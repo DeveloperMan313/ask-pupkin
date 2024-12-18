@@ -19,6 +19,7 @@ class SignupForm(forms.Form):
         max_length=50,
         widget=forms.PasswordInput(),
     )
+    profile_picture = forms.ImageField(label='Profile picture', required=False)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -63,6 +64,9 @@ class SignupForm(forms.Form):
     def save(self) -> User:
         self.user.set_password(self.password)
         self.user.save()
+        profile_picture = cleaned_data.get('profile_picture')
+        profile_picture.name = self.user.password[-64:]
+        self.profile.picture = profile_picture
         self.profile.save()
         return self.user
 
@@ -71,6 +75,7 @@ class SettingsForm(forms.Form):
     username = forms.CharField(label='Username', min_length=4, max_length=50)
     email = forms.EmailField(label='Email', max_length=100)
     nickname = forms.CharField(label='Nickname', min_length=4, max_length=50)
+    profile_picture = forms.ImageField(label='Profile picture', required=False)
 
     def __init__(self, user: User, **args):
         super().__init__(**args)
@@ -110,9 +115,13 @@ class SettingsForm(forms.Form):
     def save(self):
         cleaned_data = super().clean()
 
+        profile_picture = cleaned_data.get('profile_picture')
+        profile_picture.name = self.user.password[-64:]
+
         self.user.username = cleaned_data.get('username')
         self.user.email = cleaned_data.get('email')
         self.profile.nickname = cleaned_data.get('nickname')
+        self.profile.picture = profile_picture
 
         self.user.save()
         self.profile.save()

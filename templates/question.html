@@ -1,13 +1,14 @@
 {% extends 'layouts/base.html' %}
 
 {% load static %}
+{% load pfp %}
 {% load crispy_forms_tags %}
 
 {% block content %}
 <div class="card mt-4" style="max-width: 50em;">
     <div class="row g-0">
         <div class="col-4 text-center" style="width: 10em;">
-            <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded w-75 my-3" alt="...">
+            <img src="{{ question.user.profile.picture|get_pfp_url }}" class="img-fluid rounded w-75 my-3" alt="...">
             <input type="number" name="rating" value="{{ question.rating }}" class="w-50 my-3">
         </div>
         <div class="col-8">

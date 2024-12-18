@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'app',
+    'app.templatetags.pfp',
 ]
 
 MIDDLEWARE = [
@@ -127,9 +128,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-STATIC_URL = 'static/'
+MEDIA_ROOT = BASE_DIR / 'uploads'
+
+STATIC_URL = '/static/'
 
 LOGIN_URL = '/login/'
+
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -11,6 +11,7 @@ class ProfileManager(models.query.QuerySet):
 class Profile(models.Model):
     user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     nickname = models.CharField(null=False, unique=True, max_length=50)
+    picture = models.ImageField(null=True)
 
     objects = ProfileManager.as_manager()
 
