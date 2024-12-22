@@ -36,5 +36,6 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('rate_question/', views.rate_question, name='rate_question'),
     path('rate_answer/', views.rate_answer, name='rate_answer'),
+    path('answer_correct_set/', views.answer_correct_set, name='answer_correct_set'),
     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

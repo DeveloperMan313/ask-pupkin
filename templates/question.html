@@ -29,7 +29,9 @@
     </div>
 </div>
 
+{% if answers %}
 <hr class="border border-2 opacity-75 my-4" style="max-width: 50em;">
+{% endif %}
 
 <div class="mt-3" style="max-width: 50em;">
     {% for answer in answers %}
@@ -52,4 +54,5 @@
 {% endif %}
 {% csrf_token %}
 <script src="{% static 'js/ratings.js' %}"></script>
+<script src="{% static 'js/answers.js' %}"></script>
 {% endblock %}

@@ -3,7 +3,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls.exceptions import Http404
 from django.views.decorators.csrf import csrf_protect
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 import json
@@ -324,3 +324,27 @@ def rate_answer(request):
         new_rating = old_rating
 
     return JsonResponse({'new_rating': new_rating})
+
+
+@csrf_protect
+@login_required
+def answer_correct_set(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Wrong method')
+    try:
+        request_json = json.loads(request.body)
+        if request_json['checked'] not in [True, False]:
+            raise ValueError
+        answer = Answer.objects.get(pk=request_json['id'])
+    except (ValueError, KeyError, ObjectDoesNotExist):
+        return HttpResponseBadRequest('Wrong format')
+
+    if request.user != answer.question.user:
+        return HttpResponseBadRequest(
+            'Cannot mark correct answer under other user\'s question'
+        )
+
+    answer.is_correct = request_json['checked']
+    answer.save()
+
+    return HttpResponse()
