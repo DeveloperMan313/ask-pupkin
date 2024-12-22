@@ -1,4 +1,7 @@
-<div class="rating-area w-50 my-3" data-type="question" data-id="{{ question.pk }}">
-    <p class="rating">{{ question.rating }}</p>
-    <span class="dislike-btn me-2">dislike</span><span class="like-btn">like</span>
+{% load static %}
+
+<div class="rating-area w-50 my-3" data-type="question" data-id="{{ question.pk }}"
+    data-user-rating="{{ question.user_rating }}">
+    <p class="rating mb-0">{{ question.rating }}</p>
+    <img src="{% static 'svg/triangle-up.svg' %}" alt="dislike" class="dislike-btn me-2" style="transform: rotate(180deg);"><img src="{% static 'svg/triangle-up.svg' %}" alt="like" class="like-btn">
 </div>

@@ -45,7 +45,7 @@ def handler404(request, exception, template_name="404.html"):
 
 @csrf_protect
 def index(request):
-    page = paginate(request, Question.objects.new())
+    page = paginate(request, Question.objects.new().with_user_rating(request.user))
     for q in page.object_list:
         q.init_tag_list()
     return render(
@@ -64,7 +64,7 @@ def index(request):
 
 @csrf_protect
 def hot(request):
-    page = paginate(request, Question.objects.hot())
+    page = paginate(request, Question.objects.hot().with_user_rating(request.user))
     for q in page.object_list:
         q.init_tag_list()
     return render(
@@ -76,14 +76,14 @@ def hot(request):
             'best_members': Profile.objects.best(),
             'page': page,
             'questions': page.object_list,
-            'category': 'top',
+            'category': 'hot',
         },
     )
 
 
 @csrf_protect
 def tag(request, tag):
-    questions = Question.objects.by_tag_name(tag)
+    questions = Question.objects.by_tag_name(tag).with_user_rating(request.user)
     if len(questions) == 0:
         raise Http404
     page = paginate(request, questions)
@@ -91,7 +91,7 @@ def tag(request, tag):
         q.init_tag_list()
     return render(
         request,
-        'tag.html',
+        'index.html',
         context={
             'page_title': f'AskPupkin - Tag: {tag}',
             'popular_tags': Tag.objects.popular(),
@@ -99,6 +99,7 @@ def tag(request, tag):
             'page': page,
             'tag': tag,
             'questions': page.object_list,
+            'category': 'tag',
         },
     )
 
@@ -129,7 +130,7 @@ def ask(request):
 @csrf_protect
 def question(request, question_id):
     try:
-        question = Question.objects.by_id(question_id)
+        question = Question.objects.with_user_rating(request.user).by_id(question_id)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -150,7 +151,9 @@ def question(request, question_id):
             'popular_tags': Tag.objects.popular(),
             'best_members': Profile.objects.best(),
             'question': question,
-            'answers': tuple(Answer.objects.by_question_id(question_id)),
+            'answers': Answer.objects.by_question_id(question_id).with_user_rating(
+                request.user
+            ),
             'form': form,
         },
     )

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, Sum, Value
+from django.db.models.functions import Cast
 
 
 class ProfileManager(models.query.QuerySet):
@@ -42,6 +43,12 @@ class QuestionManager(models.query.QuerySet):
 
     def with_answer_count(self):
         return self.annotate(answer_count=Count('answer', distinct=True))
+    
+    def with_user_rating(self, user: User):
+        if user.is_authenticated:
+            return self.annotate(user_rating=Sum(-1 + 2 * Cast('question_rating__is_positive', models.IntegerField()), default=0, filter=Q(question_rating__user=user)))
+        else:
+            return self.annotate(user_rating=Value(0))
 
     def new(self):
         return self.with_rating().with_answer_count().order_by('-pk')
@@ -74,6 +81,12 @@ class AnswerManager(models.query.QuerySet):
             .annotate(likes=Count('answer_rating', distinct=True, filter=Q(answer_rating__is_positive=True))) \
             .annotate(dislikes=Count('answer_rating', distinct=True, filter=Q(answer_rating__is_positive=False))) \
             .annotate(rating=F('likes') - F('dislikes'))
+
+    def with_user_rating(self, user: User):
+        if user.is_authenticated:
+            return self.annotate(user_rating=Sum(-1 + 2 * Cast('answer_rating__is_positive', models.IntegerField()), default=0, filter=Q(answer_rating__user=user)))
+        else:
+            return self.annotate(user_rating=Value(0))
 
     def by_question_id(self, question_id: int):
         return self.with_rating().filter(question__id=question_id).order_by('-is_correct', '-rating')

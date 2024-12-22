@@ -5,6 +5,11 @@ function rateHandler(event) {
     const obj_type = button.parentElement.dataset.type;
     const obj_id = button.parentElement.dataset.id;
     const action = button.classList.contains('like-btn') ? 'like' : 'dislike';
+    const user_rating = button.parentElement.dataset.userRating;
+
+    if (action == 'like' && user_rating == "1" || action == 'dislike' && user_rating == "-1") {
+        return;
+    }
 
     const request = new Request(`/rate_${obj_type}/`, {
         method: 'POST',
@@ -18,6 +23,7 @@ function rateHandler(event) {
                 response.json().then((data) => {
                     button.parentElement.getElementsByClassName('rating')[0].innerText = data['new_rating'];
                 });
+                button.parentElement.setAttribute('data-user-rating', parseInt(user_rating) + ((action == 'like') ? 1 : -1));
             }
         });
 }

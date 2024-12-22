@@ -3,13 +3,16 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/ratings.css' %}">
 <div>
     {% if category == 'new' %}
     <span class="fs-1 me-4">New Questions</span>
     <a href="{% url 'hot' %}" class="fs-3">Hot Questions</a>
-    {% else %}
+    {% elif category == 'hot' %}
     <span class="fs-1 me-4">Hot Questions</span>
     <a href="{% url 'index' %}" class="fs-3">New Questions</a>
+    {% elif category == 'tag' %}
+    <span class="fs-1">Tag: {{ tag }}</span>
     {% endif %}
 </div>
 

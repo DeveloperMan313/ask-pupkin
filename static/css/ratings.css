@@ -1,0 +1,15 @@
+.like-btn,
+.dislike-btn {
+    filter: invert(0.5) sepia(1);
+    cursor: pointer;
+}
+
+.rating-area[data-user-rating="-1"]>.dislike-btn {
+    cursor: default;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(150deg);
+}
+
+.rating-area[data-user-rating="1"]>.like-btn {
+    cursor: default;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(150deg);
+}
