@@ -12,7 +12,7 @@
                 <p class="card-text pb-5">{{ answer.text }}</p>
                 <div class="position-absolute bottom-0 start-0 p-4">
                     <input class="correct-checkbox form-check-input mt-0" type="checkbox" value="correct" aria-label="correct answer"
-                        style="vertical-align: middle;" {% if user != answer.user %} disabled {% endif %}
+                        style="vertical-align: middle;" {% if user != answer.question.user %} disabled {% endif %}
                         {% if answer.is_correct %} checked {% endif %} data-id="{{ answer.pk }}"><span class="ms-2" style="vertical-align: middle;">Correct</span>
                 </div>
             </div>
