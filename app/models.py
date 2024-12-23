@@ -1,12 +1,42 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Count, Q, F, Sum, Value
+from django.db.models import Count, Q, F, Sum, Value, Case, When
 from django.db.models.functions import Cast
+from datetime import datetime, timedelta
 
 
 class ProfileManager(models.query.QuerySet):
-    def best(self, count: int = 10):
-        return self.annotate(answer_count=Count('user__answer', distinct=True)).order_by('-answer_count')[:count]
+    def best(self, count: int = 10, stats_days: int = 7):
+        stats_days_ago = datetime.now() - timedelta(days=stats_days)
+
+        question_ratings = Question.objects.with_rating().filter(
+            timestamp__gte=stats_days_ago
+        ).values('user', 'rating')
+
+        answer_ratings = Answer.objects.with_rating().filter(
+            timestamp__gte=stats_days_ago
+        ).values('user', 'rating')
+
+        user_rating_sum = (
+            (
+                sum(
+                    q_u_r['rating']
+                    for q_u_r in question_ratings
+                    if q_u_r['user'] == user['pk']
+                )
+                + sum(
+                    a_u_r['rating']
+                    for a_u_r in answer_ratings
+                    if a_u_r['user'] == user['pk']
+                ),
+                user['pk'],
+            )
+            for user in User.objects.all().values('pk')
+        )
+
+        pk_list = tuple(user[1] for user in sorted(user_rating_sum, reverse=True)[:count])
+        preserved = Case(*[When(user__pk=pk, then=pos) for pos, pk in enumerate(pk_list)])
+        return self.filter(user__pk__in=pk_list).order_by(preserved)
 
 
 class Profile(models.Model):
@@ -21,8 +51,9 @@ class Profile(models.Model):
 
 
 class TagManager(models.query.QuerySet):
-    def popular(self, count: int = 10):
-        return self.annotate(times_used=Count('question', distinct=True)).order_by('-times_used')[:count]
+    def popular(self, count: int = 10, stats_days: int = 90):
+        stats_days_ago = datetime.now() - timedelta(days=stats_days)
+        return self.annotate(times_used=Count('question', filter=Q(question__timestamp__gte=stats_days_ago), distinct=True)).order_by('-times_used')[:count]
 
 
 class Tag(models.Model):
@@ -68,6 +99,7 @@ class Question(models.Model):
     title = models.CharField(null=False, max_length=150)
     text = models.TextField(null=False, max_length=5000)
     tags = models.ManyToManyField(Tag, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     objects = QuestionManager.as_manager()
 
@@ -97,6 +129,7 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField(null=False, max_length=5000)
     is_correct = models.BooleanField(null=False, default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     objects = AnswerManager.as_manager()
 
