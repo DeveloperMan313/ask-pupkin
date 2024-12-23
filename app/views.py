@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 import json
+from app import centrifugo
 from .models import *
 from .forms import *
 
@@ -138,6 +139,7 @@ def question(request, question_id):
         form = AnswerForm(user=request.user, question=question, data=request.POST)
         if form.is_valid():
             answer_id = form.save()
+            centrifugo.publish_answer(question_id, Answer.objects.get(pk=answer_id))
             return HttpResponseRedirect(f'/question/{question_id}/#answer{answer_id}')
     else:
         form = AnswerForm()
@@ -154,6 +156,7 @@ def question(request, question_id):
             'answers': Answer.objects.by_question_id(question_id).with_user_rating(
                 request.user
             ),
+            'centrifugo': centrifugo.get_centrifugo_user_info(request.user.pk),
             'form': form,
         },
     )

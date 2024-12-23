@@ -33,7 +33,7 @@
 <hr class="border border-2 opacity-75 my-4" style="max-width: 50em;">
 {% endif %}
 
-<div class="mt-3" style="max-width: 50em;">
+<div id="answers-container" class="mt-3" style="max-width: 50em;">
     {% for answer in answers %}
     {% include 'layouts/answer.html' %}
     {% endfor %}
@@ -53,6 +53,8 @@
 </form>
 {% endif %}
 {% csrf_token %}
+<script src="{% static 'js/centrifuge.js' %}"></script>
 <script src="{% static 'js/ratings.js' %}"></script>
-<script src="{% static 'js/answers.js' %}"></script>
+<script src="{% static 'js/answers.js' %}" data-cent-token="{{ centrifugo.token }}"
+    data-cent-url="{{ centrifugo.ws_url }}" data-question-id="{{ question.pk }}" data-own-question="{% if user == question.user %}1{% else %}0{% endif %}"></script>
 {% endblock %}
