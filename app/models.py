@@ -46,7 +46,7 @@ class QuestionManager(models.query.QuerySet):
     
     def with_user_rating(self, user: User):
         if user.is_authenticated:
-            return self.annotate(user_rating=Sum(-1 + 2 * Cast('question_rating__is_positive', models.IntegerField()), default=0, filter=Q(question_rating__user=user)))
+            return self.annotate(user_rating=Sum(-1 + 2 * Cast('question_rating__is_positive', models.IntegerField()), default=0, filter=Q(question_rating__user=user), distinct=True))
         else:
             return self.annotate(user_rating=Value(0))
 
@@ -84,7 +84,7 @@ class AnswerManager(models.query.QuerySet):
 
     def with_user_rating(self, user: User):
         if user.is_authenticated:
-            return self.annotate(user_rating=Sum(-1 + 2 * Cast('answer_rating__is_positive', models.IntegerField()), default=0, filter=Q(answer_rating__user=user)))
+            return self.annotate(user_rating=Sum(-1 + 2 * Cast('answer_rating__is_positive', models.IntegerField()), default=0, filter=Q(answer_rating__user=user), distinct=True))
         else:
             return self.annotate(user_rating=Value(0))
 
