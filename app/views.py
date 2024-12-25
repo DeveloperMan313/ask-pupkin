@@ -40,7 +40,7 @@ def handler404(request, exception, template_name="404.html"):
         context={
             'page_title': 'AskPupkin',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
         },
     )
 
@@ -56,7 +56,7 @@ def index(request):
         context={
             'page_title': 'AskPupkin',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'page': page,
             'questions': page.object_list,
             'category': 'new',
@@ -75,7 +75,7 @@ def hot(request):
         context={
             'page_title': 'AskPupkin - Hot',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'page': page,
             'questions': page.object_list,
             'category': 'hot',
@@ -97,7 +97,7 @@ def tag(request, tag):
         context={
             'page_title': f'AskPupkin - Tag: {tag}',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'page': page,
             'tag': tag,
             'questions': page.object_list,
@@ -123,7 +123,7 @@ def ask(request):
         context={
             'page_title': 'AskPupkin - Ask',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -152,7 +152,7 @@ def question(request, question_id):
         context={
             'page_title': 'AskPupkin - Question',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'question': question,
             'answers': Answer.objects.by_question_id(question_id).with_user_rating(
                 request.user
@@ -180,7 +180,7 @@ def settings(request):
         context={
             'page_title': 'AskPupkin - Settings',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -203,7 +203,7 @@ def signup(request):
         context={
             'page_title': 'AskPupkin - Sign Up',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -226,7 +226,7 @@ def login(request):
         context={
             'page_title': 'AskPupkin - Log In',
             'popular_tags': cache.get('popular_tags'),
-            'popular_tags': cache.get('popular_users'),
+            'best_members': cache.get('popular_users'),
             'form': form,
         },
     )
