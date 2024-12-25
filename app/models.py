@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.contrib.auth.models import User
 from django.db.models import Count, Q, F, Sum, Value, Case, When
 from django.db.models.functions import Cast
@@ -89,6 +90,13 @@ class QuestionManager(models.query.QuerySet):
 
     def by_tag_name(self, tag_name: str):
         return self.new().filter(tags__in=Tag.objects.filter(name=tag_name))
+    
+    def by_search(self, query_str: str):
+        if query_str is None:
+            return self
+        vector = SearchVector('title', 'text')
+        query = SearchQuery(query_str)
+        return self.annotate(rank=SearchRank(vector, query)).order_by('-rank')
 
     def by_id(self, question_id: int):
         return self.with_rating().get(pk=question_id)

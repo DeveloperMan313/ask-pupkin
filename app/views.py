@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 import json
 from app import centrifugo
 from .models import *
@@ -38,15 +39,15 @@ def handler404(request, exception, template_name="404.html"):
         status=404,
         context={
             'page_title': 'AskPupkin',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
         },
     )
 
 
 @csrf_protect
 def index(request):
-    page = paginate(request, Question.objects.new().with_user_rating(request.user))
+    page = paginate(request, Question.objects.new().with_user_rating(request.user).by_search(request.GET.get('q')))
     for q in page.object_list:
         q.init_tag_list()
     return render(
@@ -54,8 +55,8 @@ def index(request):
         'index.html',
         context={
             'page_title': 'AskPupkin',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'page': page,
             'questions': page.object_list,
             'category': 'new',
@@ -73,8 +74,8 @@ def hot(request):
         'index.html',
         context={
             'page_title': 'AskPupkin - Hot',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'page': page,
             'questions': page.object_list,
             'category': 'hot',
@@ -95,8 +96,8 @@ def tag(request, tag):
         'index.html',
         context={
             'page_title': f'AskPupkin - Tag: {tag}',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'page': page,
             'tag': tag,
             'questions': page.object_list,
@@ -121,8 +122,8 @@ def ask(request):
         'ask.html',
         context={
             'page_title': 'AskPupkin - Ask',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -150,8 +151,8 @@ def question(request, question_id):
         'question.html',
         context={
             'page_title': 'AskPupkin - Question',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'question': question,
             'answers': Answer.objects.by_question_id(question_id).with_user_rating(
                 request.user
@@ -178,8 +179,8 @@ def settings(request):
         'settings.html',
         context={
             'page_title': 'AskPupkin - Settings',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -201,8 +202,8 @@ def signup(request):
         'signup.html',
         context={
             'page_title': 'AskPupkin - Sign Up',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'form': form,
         },
     )
@@ -224,8 +225,8 @@ def login(request):
         'login.html',
         context={
             'page_title': 'AskPupkin - Log In',
-            'popular_tags': Tag.objects.popular(),
-            'best_members': Profile.objects.best(),
+            'popular_tags': cache.get('popular_tags'),
+            'popular_tags': cache.get('popular_users'),
             'form': form,
         },
     )
